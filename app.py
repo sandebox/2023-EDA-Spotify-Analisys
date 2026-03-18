@@ -138,8 +138,8 @@ section[data-testid="stSidebar"] p { color: #555 !important; font-size: 12px !im
 .kpi-card {
     background: #111;
     border: 1px solid #1a1a1a;
-    border-radius: 16px;
-    padding: 20px 20px 18px;
+    border-radius: 20px;
+    padding: 28px 28px 26px;
     position: relative;
     overflow: hidden;
     transition: border-color 0.2s;
@@ -148,32 +148,33 @@ section[data-testid="stSidebar"] p { color: #555 !important; font-size: 12px !im
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 2px;
+    height: 3px;
     background: var(--accent, #1DB954);
 }
 .kpi-card:hover { border-color: #2a2a2a; }
 .kpi-icon {
-    font-size: 18px;
-    margin-bottom: 12px;
+    font-size: 26px;
+    margin-bottom: 16px;
     display: block;
+    line-height: 1;
 }
 .kpi-label {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #555;
-    margin-bottom: 6px;
+    margin-bottom: 10px;
 }
 .kpi-value {
     font-family: 'Syne', sans-serif;
-    font-size: 32px;
+    font-size: 44px;
     font-weight: 800;
     color: #fff;
     line-height: 1;
-    letter-spacing: -1px;
+    letter-spacing: -2px;
 }
-.kpi-value span { color: var(--accent, #1DB954); }
+.kpi-value span { color: var(--accent, #1DB954); font-size: 28px; letter-spacing: -1px; }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
@@ -793,26 +794,7 @@ with tab5:
             "danceability_%","energy_%","bpm",
         ])
 
-    top_df = (
-        dff.nlargest(n_top, sort_by)
-        [["track_name","artist(s)_name","released_year","streams_M",
-          "in_spotify_playlists","bpm","danceability_%","energy_%",
-          "mode","key","collab","era"]]
-        .rename(columns={
-            "track_name":"Música","artist(s)_name":"Artista(s)",
-            "released_year":"Ano","streams_M":"Streams (M)",
-            "in_spotify_playlists":"Playlists","bpm":"BPM",
-            "danceability_%":"Dance","energy_%":"Energy",
-            "mode":"Modo","key":"Key","collab":"Tipo","era":"Era",
-        })
-        .reset_index(drop=True)
-    )
-    top_df.index += 1
-    top_df["Streams (M)"] = top_df["Streams (M)"].round(0).astype(int)
-    st.dataframe(top_df, use_container_width=True, height=480)
-
-    st.markdown("<div style='margin-top:32px'></div>", unsafe_allow_html=True)
-
+    # ── Gráfico primeiro ──────────────────────────────────────────────────────
     top15 = dff.nlargest(15, "streams_M")
     fig   = go.Figure()
     fig.add_trace(go.Bar(
@@ -837,6 +819,27 @@ with tab5:
         margin=dict(l=320, r=100, t=50, b=50),
     )
     st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("<div style='margin-top:32px'></div>", unsafe_allow_html=True)
+
+    # ── Tabela depois ─────────────────────────────────────────────────────────
+    top_df = (
+        dff.nlargest(n_top, sort_by)
+        [["track_name","artist(s)_name","released_year","streams_M",
+          "in_spotify_playlists","bpm","danceability_%","energy_%",
+          "mode","key","collab","era"]]
+        .rename(columns={
+            "track_name":"Música","artist(s)_name":"Artista(s)",
+            "released_year":"Ano","streams_M":"Streams (M)",
+            "in_spotify_playlists":"Playlists","bpm":"BPM",
+            "danceability_%":"Dance","energy_%":"Energy",
+            "mode":"Modo","key":"Key","collab":"Tipo","era":"Era",
+        })
+        .reset_index(drop=True)
+    )
+    top_df.index += 1
+    top_df["Streams (M)"] = top_df["Streams (M)"].round(0).astype(int)
+    st.dataframe(top_df, use_container_width=True, height=480)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""
