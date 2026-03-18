@@ -121,11 +121,11 @@ BG2    = "#111111"
 BG3    = "#161616"
 
 ERA_COLORS = {
-    "Pré-2000":  "#555555",
-    "2000s":     "#9B72CF",
-    "2010s":     "#4FC3F7",
-    "2020–2021": "#1DB954",
-    "2022–2023": "#E8563A",
+    "Pré-2000":  "#B3B3B3",   # branco acinzentado — visível no fundo escuro
+    "2000s":     "#CF6EFF",   # roxo vivo
+    "2010s":     "#00C2FF",   # azul elétrico
+    "2020–2021": "#1DB954",   # verde Spotify
+    "2022–2023": "#FF4D4D",   # vermelho vivo
 }
 
 GENRE_COLORS = {
