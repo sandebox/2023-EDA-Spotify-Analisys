@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
+from translations import t, T
 
 st.set_page_config(
     page_title="Spotify 2023 · EDA",
@@ -221,34 +222,44 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # Module selector
+    # Language selector
+    lang = st.selectbox("🌐 Language / Idioma", ["PT 🇧🇷", "EN 🇬🇧", "ES 🇪🇸"],
+                        label_visibility="collapsed",
+                        key="lang_sel")
+    lang = lang[:2]  # "PT", "EN", "ES"
+
     st.markdown("<div class='mod-selector'>", unsafe_allow_html=True)
-    st.markdown("<div class='mod-label'>Módulo</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='mod-label'>{t('module_label', lang)}</div>", unsafe_allow_html=True)
     modulo = st.radio(
         label="módulo",
-        options=["EDA", "Correlações", "Machine Learning"],
+        options=t("module_options", lang),
         label_visibility="collapsed",
     )
+    # Normalise modulo back to EN key for if/elif comparisons
+    mod_map = {"EDA":"EDA", "Correlações":"Correlações", "Correlations":"Correlações",
+               "Correlaciones":"Correlações", "Machine Learning":"Machine Learning"}
+    modulo = mod_map.get(modulo, modulo)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='padding:0 16px'>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#333;font-size:10px;font-weight:600;"
-                "letter-spacing:0.1em;text-transform:uppercase;"
-                "margin:16px 0 12px'>Filtros</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:#333;font-size:10px;font-weight:600;"
+                f"letter-spacing:0.1em;text-transform:uppercase;"
+                f"margin:16px 0 12px'>{t('filters_label', lang)}</p>", unsafe_allow_html=True)
 
     eras_all  = ["Pré-2000","2000s","2010s","2020–2021","2022–2023"]
-    eras_sel  = st.multiselect("Era de lançamento", eras_all, default=eras_all)
+    eras_sel  = st.multiselect(t("era_filter", lang), eras_all, default=eras_all)
     modes_all = sorted(df["mode"].dropna().unique().tolist())
-    modes_sel = st.multiselect("Modo", modes_all, default=modes_all)
+    modes_sel = st.multiselect(t("mode_filter", lang), modes_all, default=modes_all)
     year_min  = int(df["released_year"].min())
     year_max  = int(df["released_year"].max())
-    year_range = st.slider("Ano de lançamento", year_min, year_max, (year_min, year_max))
+    year_range = st.slider(t("year_filter", lang), year_min, year_max, (year_min, year_max))
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown(
         "<div style='padding:24px 16px 16px'>"
         "<p style='color:#2a2a2a;font-size:10px;line-height:1.6'>"
         "Dataset: Kaggle<br>Most Streamed Spotify Songs 2023</p>"
-        "<p style='color:#2a2a2a;font-size:10px;margin-top:8px'>Desenvolvido por<br>"
+        f"<p style='color:#2a2a2a;font-size:10px;margin-top:8px'>{t('footer_dev', lang)}<br>"
         "<a href='https://github.com/SanderAugustoGarcia' "
         "style='color:#1DB954;text-decoration:none'>Sander Augusto Garcia</a></p>"
         "</div>", unsafe_allow_html=True)
@@ -280,11 +291,11 @@ if modulo == "EDA":
 
     st.markdown(f"""
     <div class="hero">
-        <div class="hero-eyebrow">Análise Exploratória de Dados · 2023</div>
-        <h1 class="hero-title">Spotify<br><span>em números.</span></h1>
-        <p class="hero-sub">Pipeline completo ETL → EDA sobre as
-        <strong style="color:#e8e6df">{len(dff):,} músicas</strong>
-        mais ouvidas no Spotify em 2023.</p>
+        <div class="hero-eyebrow">{t('eda_eyebrow', lang)}</div>
+        <h1 class="hero-title">{t('eda_title_line1', lang)}<br><span>{t('eda_title_line2', lang)}</span></h1>
+        <p class="hero-sub">{t('eda_sub', lang)}
+        <strong style="color:#e8e6df">{len(dff):,} {t('kpi_songs', lang)}</strong>
+        {t('eda_sub2', lang)}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -292,93 +303,93 @@ if modulo == "EDA":
     <div class="kpi-grid">
       <div class="kpi-card" style="--accent:#1DB954">
         <span class="kpi-icon">🎵</span>
-        <div class="kpi-label">Músicas</div>
+        <div class="kpi-label">{t('kpi_songs', lang)}</div>
         <div class="kpi-value">{len(dff):,}</div>
       </div>
       <div class="kpi-card" style="--accent:#4FC3F7">
         <span class="kpi-icon">▶</span>
-        <div class="kpi-label">Streams total</div>
+        <div class="kpi-label">{t('kpi_streams', lang)}</div>
         <div class="kpi-value">{dff['streams'].sum()/1e9:.1f}<span>B</span></div>
       </div>
       <div class="kpi-card" style="--accent:#F59B23">
         <span class="kpi-icon">~</span>
-        <div class="kpi-label">Mediana streams</div>
+        <div class="kpi-label">{t('kpi_median', lang)}</div>
         <div class="kpi-value">{dff['streams_M'].median():.0f}<span>M</span></div>
       </div>
       <div class="kpi-card" style="--accent:#9B72CF">
         <span class="kpi-icon">⊘</span>
-        <div class="kpi-label">Gini</div>
+        <div class="kpi-label">{t('kpi_gini', lang)}</div>
         <div class="kpi-value">{gini:.2f}</div>
       </div>
       <div class="kpi-card" style="--accent:#E8563A">
         <span class="kpi-icon">↑</span>
-        <div class="kpi-label">Top 10% streams</div>
+        <div class="kpi-label">{t('kpi_top10', lang)}</div>
         <div class="kpi-value">{share_top10:.0f}<span>%</span></div>
       </div>
     </div>
     """, unsafe_allow_html=True)
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "Distribuição","Sazonalidade","Eras","Colaborações","Top músicas"])
+        t("tab_dist",lang), t("tab_season",lang), t("tab_eras",lang),
+        t("tab_collab",lang), t("tab_top",lang)])
 
     # ── TAB 1: Distribuição
     with tab1:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">Q1 · Distribuição</div>
-            <h2 class="section-title">Quão desigual é a<br>distribuição de streams?</h2>
-            <p class="section-desc">Histograma, escala logarítmica, Curva de Lorenz e Coeficiente de Gini</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('q1_num',lang)}</div>
+            <h2 class="section-title">{t('q1_title',lang)}</h2>
+            <p class="section-desc">{t('q1_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
         col1, col2 = st.columns(2, gap="large")
         with col1:
             log_s = np.log10(dff["streams"].clip(lower=1))
             fig = go.Figure()
             fig.add_trace(go.Histogram(x=log_s, nbinsx=40, marker_color=GREEN, opacity=0.9,
-                hovertemplate="log₁₀: %{x:.2f}<br>Músicas: %{y}<extra></extra>"))
+                hovertemplate=f"log₁₀: %{{x:.2f}}<br>{t('q1_yaxis',lang)}: %{{y}}<extra></extra>"))
             fig.add_vline(x=float(np.log10(dff["streams"].median())),
                 line_dash="dash", line_color=CORAL, line_width=1.5,
-                annotation_text=f"Mediana {dff['streams_M'].median():.0f}M",
+                annotation_text=f"{t('q1_median_lbl',lang)} {dff['streams_M'].median():.0f}M",
                 annotation_font_color=CORAL, annotation_font_size=11)
             fig.add_vline(x=float(np.log10(dff["streams"].mean())),
                 line_dash="dot", line_color=AMBER, line_width=1.5,
-                annotation_text=f"Média {dff['streams_M'].mean():.0f}M",
+                annotation_text=f"{t('q1_mean_lbl',lang)} {dff['streams_M'].mean():.0f}M",
                 annotation_font_color=AMBER, annotation_position="top left",
                 annotation_font_size=11)
-            spotify_layout(fig, title="Distribuição em log₁₀",
-                xaxis_title="log₁₀ (streams)", yaxis_title="Nº de músicas", height=380)
+            spotify_layout(fig, title=t("q1_chart1",lang),
+                xaxis_title=t("q1_xaxis",lang), yaxis_title=t("q1_yaxis",lang), height=380)
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             fig2 = go.Figure()
             fig2.add_trace(go.Scatter(x=cum_p*100, y=cum_s*100, mode="lines",
                 line=dict(color=GREEN, width=2.5), fill="tonexty",
-                fillcolor="rgba(29,185,84,0.08)", name="Curva de Lorenz",
+                fillcolor="rgba(29,185,84,0.08)", name=t("q1_chart2",lang),
                 hovertemplate="Top %{x:.1f}% músicas<br>= %{y:.1f}% streams<extra></extra>"))
             fig2.add_trace(go.Scatter(x=[0,100], y=[0,100], mode="lines",
-                line=dict(color="#2a2a2a", width=1.2, dash="dash"), name="Igualdade perfeita"))
+                line=dict(color="#2a2a2a", width=1.2, dash="dash"), name=t("q1_perfect",lang)))
             fig2.add_annotation(x=65, y=22,
                 text=f"<b>Top 10% = {share_top10:.0f}% streams</b><br>Gini = {gini:.2f}",
                 showarrow=True, arrowhead=2, ax=0, ay=-50,
                 bgcolor=BG3, bordercolor=GREEN, borderwidth=1,
                 font=dict(color=GREEN, size=12, family="DM Sans"))
-            spotify_layout(fig2, title="Curva de Lorenz",
-                xaxis_title="% músicas (acumulado)", yaxis_title="% streams (acumulado)",
+            spotify_layout(fig2, title=t("q1_chart2",lang),
+                xaxis_title=t("q1_x2",lang), yaxis_title=t("q1_y2",lang),
                 height=380, showlegend=True)
             st.plotly_chart(fig2, use_container_width=True)
-        st.markdown(f"""<div class="insight">
-            💡 <strong>Insight:</strong> Distribuição em <span class="hl">lei de potência</span> —
-            média (<span class="hl">{dff['streams_M'].mean():.0f}M</span>) quase o dobro da mediana
-            (<span class="hl">{dff['streams_M'].median():.0f}M</span>).
-            Gini de <span class="hl">{gini:.2f}</span>: top 10% gera
-            <span class="hl">{share_top10:.0f}%</span> de todos os streams.
-        </div>""", unsafe_allow_html=True)
+        _q1_ins = t("q1_insight", lang,
+            mean=f"{dff['streams_M'].mean():.0f}",
+            median=f"{dff['streams_M'].median():.0f}",
+            gini=f"{gini:.2f}", top10=f"{share_top10:.0f}")
+        st.markdown(f"<div class='insight'>💡 <strong>Insight:</strong> {_q1_ins}</div>",
+            unsafe_allow_html=True)
 
     # ── TAB 2: Sazonalidade
     with tab2:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">Q2 · Sazonalidade</div>
-            <h2 class="section-title">Existe sazonalidade<br>nos lançamentos?</h2>
-            <p class="section-desc">Volume de lançamentos e streams mediana por mês — 2022–2023</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('q2_num',lang)}</div>
+            <h2 class="section-title">{t('q2_title',lang)}</h2>
+            <p class="section-desc">{t('q2_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
-        month_names = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"]
+        month_names = t("q2_months", lang)
         df_rec  = dff[dff["released_year"] >= 2022]
         m_count = df_rec.groupby("released_month").size().reindex(range(1,13), fill_value=0)
         m_str   = df_rec.groupby("released_month")["streams_M"].median().reindex(range(1,13), fill_value=0)
@@ -391,7 +402,7 @@ if modulo == "EDA":
                 textfont=dict(color="#e8e6df", size=11),
                 hovertemplate="%{x}: <b>%{y} músicas</b><extra></extra>"))
             fig.add_hline(y=m_count.mean(), line_dash="dash", line_color="#2a2a2a")
-            spotify_layout(fig, title="Lançamentos por mês", yaxis_title="Nº de músicas", height=380)
+            spotify_layout(fig, title=t("q2_chart1",lang), yaxis_title=t("q2_yaxis1",lang), height=380)
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             colors_str = [AMBER if v == m_str.max() else GREEN for v in m_str.values]
@@ -400,24 +411,23 @@ if modulo == "EDA":
                 opacity=0.9, text=[f"{v:.0f}M" for v in m_str.values], textposition="outside",
                 textfont=dict(color="#e8e6df", size=11),
                 hovertemplate="%{x}: mediana <b>%{y:.0f}M</b><extra></extra>"))
-            spotify_layout(fig2, title="Streams mediana por mês", yaxis_title="Streams mediana (M)", height=380)
+            spotify_layout(fig2, title=t("q2_chart2",lang), yaxis_title=t("q2_yaxis2",lang), height=380)
             st.plotly_chart(fig2, use_container_width=True)
         best_vol = month_names[m_count.idxmax()-1]
         best_str = month_names[m_str.idxmax()-1]
         worst    = month_names[m_count.idxmin()-1]
-        st.markdown(f"""<div class="insight amber">
-            💡 <strong>Insight:</strong> <span class="hl">{best_vol}</span> lidera em lançamentos
-            ({m_count.max()} músicas). <strong>{worst}</strong> é o mais calmo ({m_count.min()}).
-            Músicas de <span class="hl">{best_str}</span> têm maior mediana de streams —
-            <span class="hl">trade-off entre volume e visibilidade</span>.
-        </div>""", unsafe_allow_html=True)
+        _q2_ins = t("q2_insight", lang,
+            best_vol=best_vol, count_max=m_count.max(),
+            worst=worst, count_min=m_count.min(), best_str=best_str)
+        st.markdown(f"<div class='insight amber'>💡 <strong>Insight:</strong> {_q2_ins}</div>",
+            unsafe_allow_html=True)
 
     # ── TAB 3: Eras
     with tab3:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">Q3 · Eras</div>
-            <h2 class="section-title">Músicas antigas ainda<br>dominam os charts?</h2>
-            <p class="section-desc">Comparação de streams por era · viés de sobrevivência</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('q3_num',lang)}</div>
+            <h2 class="section-title">{t('q3_title',lang)}</h2>
+            <p class="section-desc">{t('q3_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
         era_order   = ["Pré-2000","2000s","2010s","2020–2021","2022–2023"]
         era_order_f = [e for e in era_order if e in dff["era"].unique()]
@@ -430,7 +440,7 @@ if modulo == "EDA":
                 text=era_counts.values, textposition="outside",
                 textfont=dict(color="#e8e6df", size=11),
                 hovertemplate="%{x}: <b>%{y} músicas</b><extra></extra>"))
-            spotify_layout(fig, title="Músicas por era", yaxis_title="Nº de músicas", height=380)
+            spotify_layout(fig, title=t("q3_chart1",lang), yaxis_title=t("q3_yaxis1",lang), height=380)
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             fig2 = go.Figure()
@@ -443,25 +453,24 @@ if modulo == "EDA":
                     marker_color=color, line_color=color,
                     fillcolor=f"rgba({r},{g},{b},0.12)", boxmean=True,
                     hovertemplate=f"<b>{era}</b><br>%{{y:.0f}}M<extra></extra>"))
-            spotify_layout(fig2, title="Streams por era (boxplot)", yaxis_title="Streams (M)", height=380)
+            spotify_layout(fig2, title=t("q3_chart2",lang), yaxis_title=t("q3_yaxis2",lang), height=380)
             st.plotly_chart(fig2, use_container_width=True)
+        _cols = t("q3_table_cols", lang)
         era_summary = (dff.groupby("era")["streams_M"]
             .agg(["count","median","mean","max"]).reindex(era_order_f)
-            .rename(columns={"count":"Músicas","median":"Mediana (M)","mean":"Média (M)","max":"Máx (M)"})
-            .round(0).astype({"Músicas": int}))
+            .rename(columns={"count":_cols["count"],"median":_cols["median"],
+                             "mean":_cols["mean"],"max":_cols["max"]})
+            .round(0).astype({_cols["count"]: int}))
         st.dataframe(era_summary, use_container_width=True)
-        st.markdown("""<div class="insight purple">
-            ⚠️ <strong>Viés de sobrevivência:</strong> Os <span class="hl">anos 2000</span>
-            têm a maior mediana — mas aqui só estão os <span class="hl">maiores clássicos de sempre</span>.
-            Catálogo histórico = <span class="hl">activo passivo de alto valor</span> para editoras.
-        </div>""", unsafe_allow_html=True)
+        st.markdown(f"<div class='insight purple'>{t('q3_insight',lang)}</div>",
+            unsafe_allow_html=True)
 
     # ── TAB 4: Colaborações
     with tab4:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">Q4 · Colaborações</div>
-            <h2 class="section-title">Colaborações geram mais<br>streams do que solos?</h2>
-            <p class="section-desc">Solo vs. Colaboração · análise por número de artistas</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('q4_num',lang)}</div>
+            <h2 class="section-title">{t('q4_title',lang)}</h2>
+            <p class="section-desc">{t('q4_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3, gap="large")
         with col1:
@@ -472,7 +481,7 @@ if modulo == "EDA":
                 text=[f"{v} ({v/max(len(dff),1)*100:.0f}%)" for v in counts.values],
                 textposition="outside", textfont=dict(color="#e8e6df", size=12),
                 hovertemplate="%{x}: <b>%{y}</b><extra></extra>"))
-            spotify_layout(fig, title="Volume no dataset", yaxis_title="Nº de músicas", height=360)
+            spotify_layout(fig, title=t("q4_chart1",lang), yaxis_title=t("q4_yaxis",lang), height=360)
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             medians = dff.groupby("collab")["streams_M"].median().reindex(["Solo","Colaboração"], fill_value=0)
@@ -482,7 +491,7 @@ if modulo == "EDA":
                 text=[f"{v:.0f}M" for v in medians.values], textposition="outside",
                 textfont=dict(color="#e8e6df", size=14),
                 hovertemplate="%{x}: mediana <b>%{y:.0f}M</b><extra></extra>"))
-            spotify_layout(fig2, title="Streams mediana", yaxis_title="Streams mediana (M)", height=360)
+            spotify_layout(fig2, title=t("q4_chart2",lang), yaxis_title=t("q4_yaxis2",lang), height=360)
             st.plotly_chart(fig2, use_container_width=True)
         with col3:
             dff["_ac"] = dff["artist_count"].clip(upper=5)
@@ -495,31 +504,27 @@ if modulo == "EDA":
                 text=[f"{v:.0f}M" for v in by_n.values], textposition="outside",
                 textfont=dict(color="#e8e6df", size=11),
                 hovertemplate="Nº artistas %{x}: <b>%{y:.0f}M</b><extra></extra>"))
-            spotify_layout(fig3, title="Mediana por nº de artistas",
-                xaxis_title="Nº de artistas", yaxis_title="Streams mediana (M)", height=360)
+            spotify_layout(fig3, title=t("q4_chart3",lang),
+                xaxis_title=t("q4_xaxis3",lang), yaxis_title=t("q4_yaxis2",lang), height=360)
             st.plotly_chart(fig3, use_container_width=True)
         solo_m   = dff[dff["collab"]=="Solo"]["streams_M"].median()
         collab_m = dff[dff["collab"]=="Colaboração"]["streams_M"].median()
         diff_pct = (solo_m/collab_m - 1)*100 if collab_m > 0 else 0
-        st.markdown(f"""<div class="insight warn">
-            💡 <strong>Resultado contra-intuitivo:</strong> Solos têm mediana
-            <span class="hl">{diff_pct:.0f}% superior</span> ({solo_m:.0f}M vs {collab_m:.0f}M).
-            <strong>O factor determinante é a base de fãs do artista principal</strong>,
-            não o número de artistas.
-        </div>""", unsafe_allow_html=True)
+        _q4_ins = t("q4_insight", lang, diff=diff_pct, solo=solo_m, collab=collab_m)
+        st.markdown(f"<div class='insight warn'>{_q4_ins}</div>", unsafe_allow_html=True)
 
     # ── TAB 5: Top músicas
     with tab5:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">Top · Ranking</div>
-            <h2 class="section-title">As músicas<br>mais ouvidas.</h2>
-            <p class="section-desc">Ranking dinâmico — filtra e ordena por qualquer métrica</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('top_num',lang)}</div>
+            <h2 class="section-title">{t('top_title',lang)}</h2>
+            <p class="section-desc">{t('top_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
         col_ctrl1, col_ctrl2, _ = st.columns([1,1,2])
         with col_ctrl1:
-            n_top = st.slider("Nº de músicas", 5, 50, 15)
+            n_top = st.slider(t("top_slider",lang), 5, 50, 15)
         with col_ctrl2:
-            sort_by = st.selectbox("Ordenar por", [
+            sort_by = st.selectbox(t("top_sortby",lang), [
                 "streams","in_spotify_playlists","in_spotify_charts",
                 "danceability_%","energy_%","bpm"])
         top15 = dff.nlargest(15, "streams_M")
@@ -534,17 +539,18 @@ if modulo == "EDA":
             text=[f"{v:.0f}M" for v in top15["streams_M"]], textposition="outside",
             textfont=dict(color=GREEN, size=11),
             hovertemplate="<b>%{y}</b><br>%{x:.0f}M streams<extra></extra>"))
-        spotify_layout(fig, title="Top 15 — streams totais", xaxis_title="Streams (M)", height=520)
+        spotify_layout(fig, title=t("top_chart",lang), xaxis_title=t("top_xaxis",lang), height=520)
         fig.update_layout(yaxis=dict(autorange="reversed"), margin=dict(l=320, r=100, t=50, b=50))
         st.plotly_chart(fig, use_container_width=True)
         st.markdown("<div style='margin-top:24px'></div>", unsafe_allow_html=True)
         top_df = (dff.nlargest(n_top, sort_by)
             [["track_name","artist(s)_name","released_year","streams_M",
               "in_spotify_playlists","bpm","danceability_%","energy_%","mode","key","collab","era"]]
-            .rename(columns={"track_name":"Música","artist(s)_name":"Artista(s)",
-                "released_year":"Ano","streams_M":"Streams (M)","in_spotify_playlists":"Playlists",
+            .rename(columns={"track_name":t("top_col_song",lang),"artist(s)_name":t("top_col_artist",lang),
+                "released_year":t("top_col_year",lang),"streams_M":"Streams (M)",
+                "in_spotify_playlists":t("top_col_playlists",lang),
                 "bpm":"BPM","danceability_%":"Dance","energy_%":"Energy",
-                "mode":"Modo","key":"Key","collab":"Tipo","era":"Era"})
+                "mode":t("top_col_mode",lang),"key":"Key","collab":t("top_col_type",lang),"era":"Era"})
             .reset_index(drop=True))
         top_df.index += 1
         top_df["Streams (M)"] = top_df["Streams (M)"].round(0).astype(int)
@@ -564,21 +570,16 @@ elif modulo == "Correlações":
 
     st.markdown(f"""
     <div class="hero">
-        <div class="hero-eyebrow">Correlações · Atributos musicais</div>
-        <h1 class="hero-title">O que faz<br><span>uma música?</span></h1>
-        <p class="hero-sub">Relações entre BPM, energy, danceability, valence e streams —
-        <strong style="color:#e8e6df">{len(dff):,} músicas</strong> analisadas.</p>
+        <div class="hero-eyebrow">{t('corr_eyebrow',lang)}</div>
+        <h1 class="hero-title">{t('corr_title1',lang)}<br><span>{t('corr_title2',lang)}</span></h1>
+        <p class="hero-sub">{t('corr_sub',lang)}
+        <strong style="color:#e8e6df">{len(dff):,} {t('kpi_songs',lang)}</strong> {t('corr_sub2',lang)}</p>
     </div>
     """, unsafe_allow_html=True)
 
+    _ct = t("corr_tabs", lang)
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "Heatmap atributos",
-        "Scatter interactivo",
-        "Playlists → streams",
-        "Major vs. Minor",
-        "Por ano",
-        "Por género",
-        "Cross-platform",
+        _ct[0], _ct[1], _ct[2], _ct[3], _ct[4], _ct[5], _ct[6],
     ])
 
     # ── C1: Heatmap de correlação
@@ -1061,11 +1062,11 @@ else:
     # ── Hero
     st.markdown(f"""
     <div class="hero">
-        <div class="hero-eyebrow">Machine Learning · Spotify 2023</div>
-        <h1 class="hero-title">Prever<br><span>o sucesso.</span></h1>
-        <p class="hero-sub">Modelos interactivos treinados sobre
-        <strong style="color:#e8e6df">{len(X_all):,} músicas</strong> —
-        ajusta os parâmetros e vê o impacto em tempo real.</p>
+        <div class="hero-eyebrow">{t('ml_eyebrow',lang)}</div>
+        <h1 class="hero-title">{t('ml_title1',lang)}<br><span>{t('ml_title2',lang)}</span></h1>
+        <p class="hero-sub">{t('ml_sub',lang)}
+        <strong style="color:#e8e6df">{len(X_all):,} {t('kpi_songs',lang)}</strong> —
+        {t('ml_sub2',lang)}</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1082,11 +1083,11 @@ else:
 
     pc1, pc2, pc3 = st.columns(3)
     with pc1:
-        n_est  = st.slider("Nº de árvores (n_estimators)", 50, 500, 200, step=50,
-                           help="Mais árvores = modelo mais estável mas mais lento")
+        n_est  = st.slider(t("ml_n_est",lang), 50, 500, 200, step=50,
+                           help=t("ml_n_est_help",lang))
     with pc2:
-        max_d  = st.slider("Profundidade máxima (max_depth)", 2, 20, 8,
-                           help="Mais profundidade = mais complexo, risco de overfitting")
+        max_d  = st.slider(t("ml_max_d",lang), 2, 20, 8,
+                           help=t("ml_max_d_help",lang))
     with pc3:
         st.markdown(f"""
         <div style="padding:8px 0">
@@ -1100,20 +1101,17 @@ else:
         """, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+    _mt = t("ml_tabs", lang)
     tab_ml1, tab_ml2, tab_ml3, tab_ml4, tab_ml5 = st.tabs([
-        "Regressão",
-        "Importância de features",
-        "Classificação de sucesso",
-        "Curva de aprendizagem",
-        "UMAP 2D",
+        _mt[0], _mt[1], _mt[2], _mt[3], _mt[4],
     ])
 
     # ══ ML1: Regressão ═══════════════════════════════════════════════════════
     with tab_ml1:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">ML1 · Regressão</div>
-            <h2 class="section-title">Consegues prever<br>o número de streams?</h2>
-            <p class="section-desc">Random Forest Regressor — treino/teste 80/20 · target: streams (M)</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('ml1_num',lang)}</div>
+            <h2 class="section-title">{t('ml1_title',lang)}</h2>
+            <p class="section-desc">{t('ml1_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
 
         st.markdown("""<div class="insight blue" style="margin-bottom:24px">
@@ -1123,7 +1121,7 @@ else:
             sempre a média. Em dados de música, R²>0.35 já é um resultado interessante.
         </div>""", unsafe_allow_html=True)
 
-        with st.spinner("A treinar o modelo..."):
+        with st.spinner(t("ml1_training", lang)):
             r2, rmse, fi_reg, y_te_r, y_pred_r = run_regression(
                 X_all.values, y_reg.values, n_est, max_d)
 
@@ -1162,8 +1160,8 @@ else:
                 name="Previsões"))
             max_v = max(y_te_r.max(), y_pred_r.max())
             fig.add_trace(go.Scatter(x=[0, max_v], y=[0, max_v], mode="lines",
-                line=dict(color=CORAL, width=1.5, dash="dash"), name="Perfeito"))
-            spotify_layout(fig, title="Real vs. Previsto (conjunto de teste)",
+                line=dict(color=CORAL, width=1.5, dash="dash"), name=t("ml1_perfect", lang)))
+            spotify_layout(fig, title=t("ml1_chart1", lang),
                 xaxis_title="Streams reais (M)", yaxis_title="Streams previstos (M)",
                 height=380, showlegend=True)
             st.plotly_chart(fig, use_container_width=True)
@@ -1176,7 +1174,7 @@ else:
                 marker=dict(color=PURPLE, size=5, opacity=0.45),
                 hovertemplate="Previsto: %{x:.0f}M<br>Resíduo: %{y:.0f}M<extra></extra>"))
             fig2.add_hline(y=0, line_dash="dash", line_color=CORAL, line_width=1.5)
-            spotify_layout(fig2, title="Resíduos (erro do modelo)",
+            spotify_layout(fig2, title=t("ml1_chart2", lang),
                 xaxis_title="Streams previstos (M)", yaxis_title="Resíduo (M)", height=380)
             st.plotly_chart(fig2, use_container_width=True)
 
@@ -1189,10 +1187,10 @@ else:
 
     # ══ ML2: Importância de features ═════════════════════════════════════════
     with tab_ml2:
-        st.markdown("""<div class="section-header">
-            <div class="section-number">ML2 · Feature Importance</div>
-            <h2 class="section-title">O que o modelo<br>aprendeu?</h2>
-            <p class="section-desc">Importância de features do Random Forest — qual variável tem mais peso?</p>
+        st.markdown(f"""<div class="section-header">
+            <div class="section-number">{t('ml2_num',lang)}</div>
+            <h2 class="section-title">{t('ml2_title',lang)}</h2>
+            <p class="section-desc">{t('ml2_desc',lang)}</p>
         </div>""", unsafe_allow_html=True)
 
         st.markdown("""<div class="insight blue" style="margin-bottom:24px">
@@ -1202,7 +1200,7 @@ else:
             É uma das formas mais directas de interpretar um modelo de ML.
         </div>""", unsafe_allow_html=True)
 
-        with st.spinner("A calcular importâncias..."):
+        with st.spinner(t("ml2_spinner", lang)):
             _, _, fi_reg, _, _ = run_regression(X_all.values, y_reg.values, n_est, max_d)
 
         fi_sorted = fi_reg.rename(index=FEAT_LABELS).sort_values(ascending=True)
@@ -1218,7 +1216,7 @@ else:
             textposition="outside", textfont=dict(color="#e8e6df", size=11),
             hovertemplate="%{y}: <b>%{x:.3f}</b><extra></extra>",
         ))
-        spotify_layout(fig, title="Importância de features — Regressão (streams)",
+        spotify_layout(fig, title=t("ml2_chart", lang),
             xaxis_title="Importância relativa", height=480)
         fig.update_layout(margin=dict(l=160, r=100, t=50, b=50))
         st.plotly_chart(fig, use_container_width=True)
@@ -1258,7 +1256,7 @@ else:
             não foi) e falsos negativos (não previu hit, foi).
         </div>""", unsafe_allow_html=True)
 
-        with st.spinner("A treinar classificador..."):
+        with st.spinner(t("ml3_spinner", lang)):
             acc, cm, fi_clf, y_te_c, y_pred_c = run_classification(
                 X_all.values, y_clf.values, n_est, max_d)
 
@@ -1291,8 +1289,8 @@ else:
         col1, col2 = st.columns(2, gap="large")
         with col1:
             fig = go.Figure(go.Heatmap(
-                z=cm, x=["Não-hit (prev.)","Hit (prev.)"],
-                y=["Não-hit (real)","Hit (real)"],
+                z=cm, x=t("ml3_cm_x",lang),
+                y=t("ml3_cm_y",lang),
                 colorscale=[[0,"#0a0a0a"],[1,GREEN]],
                 text=cm, texttemplate="<b>%{text}</b>",
                 textfont=dict(size=20, color="#e8e6df"),
@@ -1344,7 +1342,7 @@ else:
             O ideal é que as duas curvas convirjam num valor alto.
         </div>""", unsafe_allow_html=True)
 
-        with st.spinner("A calcular curvas de aprendizagem (pode demorar alguns segundos)..."):
+        with st.spinner(t("ml4_spinner", lang)):
             tr_sizes, tr_scores, val_scores = run_learning_curve(
                 X_all.values, y_reg.values, n_est, max_d)
 
@@ -1356,7 +1354,7 @@ else:
             hovertemplate="n=%{x}<br>R² treino: %{y:.3f}<extra></extra>"))
         fig.add_trace(go.Scatter(
             x=tr_sizes, y=val_scores, mode="lines+markers",
-            name="Validação (CV)", line=dict(color=CORAL, width=2.5, dash="dash"),
+            name=t("ml4_val",lang), line=dict(color=CORAL, width=2.5, dash="dash"),
             marker=dict(size=8, color=CORAL),
             hovertemplate="n=%{x}<br>R² validação: %{y:.3f}<extra></extra>"))
         fig.add_hrect(y0=max(val_scores)-0.02, y1=max(val_scores)+0.02,
@@ -1393,16 +1391,20 @@ else:
             É das visualizações mais poderosas em DS.
         </div>""", unsafe_allow_html=True)
 
-        color_by = st.selectbox("Colorir pontos por",
-            ["Era", "Género inferido", "Streams (M)", "Modo (Major/Minor)"])
+        _ml5_opts = t("ml5_color_opts", lang)
+        color_by = st.selectbox(t("ml5_color_by",lang), _ml5_opts)
 
-        with st.spinner("A projectar com UMAP (pode demorar ~10s)..."):
+        with st.spinner(t("ml5_spinner", lang)):
             sub_umap = dff[ML_FEATS + ["streams_M","era","genre_cluster","mode"]].dropna()
             x_emb, y_emb = run_umap(sub_umap[ML_FEATS].values,
                                     sub_umap["era"].values)
 
         fig = go.Figure()
-        if color_by == "Era":
+        _cb_era = _ml5_opts[0]
+        _cb_gen = _ml5_opts[1]
+        _cb_str = _ml5_opts[2]
+        _cb_mod = _ml5_opts[3]
+        if color_by == _cb_era:
             for era in ["Pré-2000","2000s","2010s","2020–2021","2022–2023"]:
                 mask_e = sub_umap["era"] == era
                 if not mask_e.any(): continue
@@ -1413,7 +1415,7 @@ else:
                     customdata=sub_umap.loc[mask_e, "streams_M"].round(0).astype(str) + "M"))
             showleg = True
 
-        elif color_by == "Género inferido":
+        elif color_by == _cb_gen:
             for g, c in GENRE_COLORS.items():
                 mask_g = sub_umap["genre_cluster"] == g
                 if not mask_g.any(): continue
@@ -1424,7 +1426,7 @@ else:
                     customdata=sub_umap.loc[mask_g,"streams_M"].round(0).astype(str)+"M"))
             showleg = True
 
-        elif color_by == "Streams (M)":
+        elif color_by == _cb_str:
             fig.add_trace(go.Scatter(
                 x=x_emb, y=y_emb, mode="markers",
                 marker=dict(color=np.log10(sub_umap["streams_M"].clip(lower=0.01)),
@@ -1435,7 +1437,7 @@ else:
                 customdata=sub_umap["streams_M"]))
             showleg = False
 
-        else:  # Modo
+        else:  # Mode / Modo
             for m, c in [("Major", GREEN), ("Minor", CORAL)]:
                 mask_m = sub_umap["mode"] == m
                 if not mask_m.any(): continue
@@ -1462,12 +1464,12 @@ else:
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <hr>
 <div style="display:flex;justify-content:space-between;align-items:center;
             padding:8px 0 24px;color:#2a2a2a;font-size:12px">
-    <span>🎵 Spotify 2023 · Dataset: Kaggle</span>
-    <span>Desenvolvido por
+    <span>{t('footer_left', lang)}</span>
+    <span>{t('footer_dev_by', lang)}
         <a href="https://github.com/SanderAugustoGarcia"
            style="color:#1DB954;text-decoration:none">Sander Augusto Garcia</a>
     </span>
