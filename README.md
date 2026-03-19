@@ -1,169 +1,209 @@
-# 🎵 Spotify 2023 — ETL & Análise Exploratória de Dados
+# 🎵 Spotify 2023 — ETL, EDA & Machine Learning Dashboard
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
 ![Pandas](https://img.shields.io/badge/Pandas-2.0-150458?style=flat&logo=pandas&logoColor=white)
 ![Plotly](https://img.shields.io/badge/Plotly-5.18-3F4F75?style=flat&logo=plotly&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.32-FF4B4B?style=flat&logo=streamlit&logoColor=white)
+![Scikit-learn](https://img.shields.io/badge/scikit--learn-1.3-F7931E?style=flat&logo=scikit-learn&logoColor=white)
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat&logo=jupyter&logoColor=white)
-![Status](https://img.shields.io/badge/Status-Completo-1DB954?style=flat)
+![Status](https://img.shields.io/badge/Status-Complete-1DB954?style=flat)
 
-> Desenvolvido por **[Sander Augusto Garcia](https://github.com/SanderAugustoGarcia)**
+> Developed by **[Sander Augusto Garcia](https://github.com/SanderAugustoGarcia)**
 
 ---
 
 ## 🚀 Live Demo
 
-> **👉 [Abrir Dashboard Interactivo](https://edaspotify.streamlit.app)**
+> **👉 [Open Interactive Dashboard](https://edaspotify.streamlit.app)**
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_dark.svg)](https://edaspotify.streamlit.app)
 
 ---
 
-## 📌 Sobre o projecto
+## 📌 About
 
-Análise exploratória das **952 músicas mais ouvidas no Spotify em 2023**, combinando atributos musicais técnicos (BPM, danceability, energy…) com métricas reais de negócio em 4 plataformas: **Spotify, Apple Music, Deezer e Shazam**.
+End-to-end data science project analysing the **952 most streamed songs on Spotify in 2023**, combining musical attributes (BPM, danceability, energy…) with real business metrics across 4 platforms: **Spotify, Apple Music, Deezer and Shazam**.
 
-O projecto cobre o pipeline completo de um projecto de dados real:
+The project covers the full data science pipeline:
 
 ```
-Raw CSV  →  ETL (limpeza + features)  →  EDA (4 perguntas de negócio) → Correlação Estatística → Machine Learning →  Dashboard interactivo
+Raw CSV → ETL (cleaning + features) → EDA (4 business questions)
+       → Correlations (7 analyses) → Machine Learning (5 models)
+       → Interactive Dashboard
 ```
 
 > **Dataset:** [Most Streamed Spotify Songs 2023](https://www.kaggle.com/datasets/nelgiriyewithana/top-spotify-songs-2023) — Kaggle
 
 ---
 
-## 📂 Estrutura do repositório
+## 📂 Repository structure
 
 ```
 spotify-2023-eda/
 │
-├── app.py                     # Dashboard Streamlit (webapp interactiva)
-├── spotify_eda.ipynb          # Notebook EDA completo
-├── spotify-2023.csv           # Dataset original
-├── requirements.txt           # Dependências Python
+├── app.py                     # Streamlit interactive dashboard
+├── spotify_eda.ipynb          # Full EDA + ML notebook
+├── spotify-2023.csv           # Original dataset
+├── requirements.txt           # Python dependencies
 │
 └── README.md
 ```
 
 ---
 
-## ⚙️ ETL — Problemas encontrados e decisões
+## ⚙️ ETL — Issues found and decisions made
 
-| Problema | Coluna | Dimensão | Decisão |
-|----------|--------|----------|---------|
-| Dados de BPM/key corrompidos na coluna streams | `streams` | 1 linha | Remover linha |
-| Valores em branco | `key` | 95 linhas (10%) | Substituir por `'Unknown'` |
-| Valores nulos | `in_shazam_charts` | 50 linhas (5%) | Substituir por `0` |
+| Issue | Column | Scope | Decision |
+|-------|--------|-------|----------|
+| Corrupted row — BPM/key data shifted into streams column | `streams` | 1 row | Drop row |
+| Empty string values | `key` | 95 rows (10%) | Replace with `'Unknown'` |
+| Null values | `in_shazam_charts` | 50 rows (5%) | Replace with `0` |
 
-**Features criadas no ETL:**
+**Features engineered during ETL:**
 
-- `released_date` — data de lançamento parseada
-- `era` — período de lançamento (Pré-2000 / 2000s / 2010s / 2020–2021 / 2022–2023)
-- `collab` — classificação Solo vs. Colaboração
-- `streams_M` — streams em milhões (legibilidade)
-
----
-
-## 📊 4 Perguntas de Negócio
-
-### Q1 — Quão desigual é a distribuição de streams?
-
-| Métrica | Valor |
-|---------|-------|
-| Gini | **0.53** |
-| Top 10% das músicas | **37%** de todos os streams |
-| Média | 514M streams |
-| Mediana | 291M streams |
-
-💡 A distribuição segue uma **lei de potência** — cauda longa extrema. O Gini de 0.53 é superior ao da desigualdade de rendimento em Portugal (~0.33). A transformação log₁₀ aproxima os dados de uma normal, relevante para modelação futura.
+- `streams_M` — streams in millions (readability)
+- `era` — release period (Pre-2000 / 2000s / 2010s / 2020–2021 / 2022–2023)
+- `collab` — Solo vs. Collaboration classification
+- `genre_cluster` — inferred genre via K-Means clustering (no labels used)
 
 ---
 
-### Q2 — Existe sazonalidade nos lançamentos musicais?
+## 📊 Module 1 — Exploratory Data Analysis (4 business questions)
 
-| Observação | Valor |
-|------------|-------|
-| Mês com mais lançamentos | **Janeiro** (134 músicas) |
-| Mês com mais streams/música | **Outubro** |
-| Mês mais calmo | **Agosto** (46 músicas) |
+### Q1 — How unequal is the streams distribution?
 
-💡 Trade-off claro: Janeiro/Maio concentram lançamentos, mas **Outubro** tem a maior mediana de streams por música — lançar com menos concorrência pode valer mais.
+| Metric | Value |
+|--------|-------|
+| Gini coefficient | **0.53** |
+| Top 10% of songs | **37%** of all streams |
+| Mean | 514M streams |
+| Median | 291M streams |
+
+💡 The distribution follows a **power law** — the mean (514M) is nearly double the median (291M). The log₁₀ transformation approximates a normal distribution, relevant for future modelling.
 
 ---
 
-### Q3 — Músicas antigas ainda dominam os charts de 2023?
+### Q2 — Is there seasonality in music releases?
 
-| Era | n | Mediana streams |
+| Observation | Value |
+|-------------|-------|
+| Month with most releases | **January** (134 songs) |
+| Month with most streams/song | **October** |
+| Quietest month | **August** (46 songs) |
+
+💡 Clear trade-off: January/May concentrate releases, but songs launched in **October** have the highest median streams — releasing with less competition can be worth more.
+
+---
+
+### Q3 — Do older songs still dominate the 2023 charts?
+
+| Era | n | Median streams |
 |-----|---|----------------|
-| Pré-2000 | 48 | 622M |
-| **2000s** | 20 | **1.229M** ← maior |
+| Pre-2000 | 48 | 622M |
+| **2000s** | 20 | **1,229M** ← highest |
 | 2010s | 151 | 984M |
 | 2020–2021 | 156 | 564M |
 | 2022–2023 | 577 | 179M |
 
-💡 **Viés de sobrevivência** — as músicas antigas aqui são apenas os maiores clássicos. O catálogo histórico é um activo de alto valor passivo para editoras.
+💡 **Survivorship bias** — the only old songs in this dataset are the greatest classics of all time. Historical catalogue is a **high-value passive asset** for record labels.
 
 ---
 
-### Q4 — Colaborações geram mais streams do que solos?
+### Q4 — Do collaborations generate more streams than solos?
 
-| Tipo | Mediana streams |
+| Type | Median streams |
 |------|----------------|
 | **Solo** | **334M** |
-| Colaboração | 237M |
-| Diferença | Solo +41% |
+| Collaboration | 237M |
+| Difference | Solo +41% |
 
-💡 Resultado contra-intuitivo — solos têm mediana 41% superior. O factor determinante é a **base de fãs do artista principal**, não o número de artistas.
-
----
-
-## 🔑 Sumário Executivo
-
-| # | Pergunta | Resposta-chave | Implicação de negócio |
-|---|----------|---------------|----------------------|
-| Q1 | Distribuição de streams | Gini 0.53 · top 10% = 37% streams | Mercado concentrado — algoritmo é decisivo |
-| Q2 | Sazonalidade | Jan/Mai = mais lançamentos; Out = mais streams/música | Trade-off entre volume e visibilidade |
-| Q3 | Músicas antigas | 2000s têm mediana 6× maior que 2022–2023 | Viés de sobrevivência; catálogo = activo passivo |
-| Q4 | Colaborações | Solos com mediana 41% superior | Base de fãs do artista principal é o factor decisivo |
+💡 Counter-intuitive result — solos have 41% higher median. **The determining factor is the lead artist's fanbase**, not the number of artists on the track.
 
 ---
 
-## 🚀 Como correr localmente
+## 🔗 Module 2 — Correlations (7 analyses)
+
+| # | Analysis | Key finding |
+|---|----------|-------------|
+| C1 | Attribute correlation heatmap | Weak correlations overall — attributes alone don't determine success |
+| C2 | Interactive scatter (attribute vs. streams) | BPM has near-zero correlation with streams |
+| C3 | Playlists → streams | Spotify Playlists is the strongest driver of streams |
+| C4 | Major vs. Minor | Mode has minimal impact on commercial success |
+| C5 | Attributes by year (heatmap) | Measurable evolution of musical tastes 2010–2023 |
+| C6 | Inferred genres (K-Means) | 5 distinct profiles emerge without any genre labels |
+| C7 | Cross-platform consistency | Shazam captures emerging trends before editorial playlists |
+
+---
+
+## 🤖 Module 3 — Machine Learning (5 interactive models)
+
+All models are **interactive** — adjust `n_estimators` and `max_depth` and see the impact in real time.
+
+| Model | Metric | Result | Interpretation |
+|-------|--------|--------|----------------|
+| **RF Regression** | R² | ~0.35 | Musical attributes explain ~35% of stream variance |
+| **Feature Importance** | Relative importance | Playlists > BPM | Distribution outweighs musical attributes |
+| **RF Classification** | Accuracy | ~75% | 3 in 4 hits correctly identified |
+| **Learning Curve** | Train/val gap | < 0.20 | Model generalises well, no significant overfitting |
+| **UMAP 2D** | Visual clusters | Visible structure | Musical space has real latent structure |
+
+---
+
+## 🔑 Executive Summary
+
+| # | Question | Key answer | Business implication |
+|---|----------|-----------|---------------------|
+| Q1 | Streams distribution | Gini 0.53 · top 10% = 37% streams | Concentrated market — algorithm placement is decisive |
+| Q2 | Seasonality | Jan/May = most releases; Oct = most streams/song | Trade-off between volume and visibility |
+| Q3 | Old songs | 2000s median 6× higher than 2022–2023 | Survivorship bias; catalogue = passive asset |
+| Q4 | Collaborations | Solos 41% higher median | Lead artist's fanbase is the key factor |
+| ML | Predictive model | R²~0.35 · Playlists #1 feature | Distribution > musical attributes |
+
+---
+
+## 🚀 Run locally
 
 ```bash
-# 1. Clonar o repositório
+# 1. Clone the repository
 git clone https://github.com/SanderAugustoGarcia/spotify-2023-eda.git
 cd spotify-2023-eda
 
-# 2. Instalar dependências
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 3a. Abrir o notebook
+# 3a. Open the notebook
 jupyter notebook spotify_eda.ipynb
 
-# 3b. OU correr a webapp
+# 3b. OR run the webapp
 streamlit run app.py
 ```
 
 ---
 
-## 🛠️ Stack técnica
+## 🛠️ Tech stack
 
-| Ferramenta | Utilização |
-|------------|-----------|
-| `pandas` | Carregamento, limpeza e transformação dos dados |
-| `numpy` | Cálculos estatísticos (Gini, log, percentis) |
-| `plotly` | Visualizações interactivas com hover e filtros |
-| `streamlit` | Dashboard web interactivo com deploy gratuito |
-| `jupyter` | Notebook narrativo com análise documentada |
+| Tool | Usage |
+|------|-------|
+| `pandas` | Data loading, cleaning and transformation |
+| `numpy` | Statistical calculations (Gini, log, percentiles) |
+| `plotly` | Interactive visualisations with hover and filters |
+| `streamlit` | Interactive web dashboard with free deployment |
+| `scikit-learn` | Random Forest, K-Means, learning curves, metrics |
+| `umap-learn` | UMAP 2D dimensionality reduction |
+| `jupyter` | Narrative notebook for portfolio |
 
 ---
 
+## 📈 Next steps
+
+- [ ] **SHAP values** — deeper model interpretability beyond feature importance
+- [ ] **XGBoost** — compare performance against Random Forest
+- [ ] **Time series** — stream evolution over time for top artists
+- [ ] **NLP** — analyse track name patterns in hit songs
 
 ---
 
 <p align="center">
-  Desenvolvido por <strong>Sander Augusto Garcia</strong><br>
+  Developed by <strong>Sander Augusto Garcia</strong><br>
   <a href="https://github.com/SanderAugustoGarcia">github.com/SanderAugustoGarcia</a>
 </p>
