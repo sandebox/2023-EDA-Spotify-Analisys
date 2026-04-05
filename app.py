@@ -1050,8 +1050,9 @@ else:
         return train_sizes, train_scores.mean(axis=1), val_scores.mean(axis=1)
 
     @st.cache_data
-    def run_umap(X_vals, labels, seed=42):
-        X = pd.DataFrame(X_vals)
+    def run_umap(X_vals, seed=42):
+        """X_vals must be a numpy float array — no object arrays."""
+        X = pd.DataFrame(X_vals.astype(float))
         sc = StandardScaler()
         Xs = sc.fit_transform(X)
         reducer = umap_lib.UMAP(n_components=2, random_state=seed, n_neighbors=15, min_dist=0.1)
@@ -1397,8 +1398,7 @@ else:
 
         with st.spinner(t("ml5_spinner", lang)):
             sub_umap = dff[ML_FEATS + ["streams_M","era","genre_cluster","mode"]].dropna()
-            x_emb, y_emb = run_umap(sub_umap[ML_FEATS].values,
-                                    sub_umap["era"].values)
+            x_emb, y_emb = run_umap(sub_umap[ML_FEATS].values.astype(float))
 
         fig = go.Figure()
         _cb_era = _ml5_opts[0]
@@ -1463,6 +1463,19 @@ else:
             Muda a coloração para explorar diferentes perspectivas dos mesmos dados.
         </div>""", unsafe_allow_html=True)
 
+
+# ── Footer ────────────────────────────────────────────────────────────────────
+st.markdown(f"""
+<hr>
+<div style="display:flex;justify-content:space-between;align-items:center;
+            padding:8px 0 24px;color:#2a2a2a;font-size:12px">
+    <span>{t('footer_left', lang)}</span>
+    <span>{t('footer_dev_by', lang)}
+        <a href="https://github.com/SanderAugustoGarcia"
+           style="color:#1DB954;text-decoration:none">Sander Augusto Garcia</a>
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown(f"""
